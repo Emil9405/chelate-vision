@@ -31,6 +31,25 @@ Only the items the lab really has. Start with these and extend:
 
 If a size is rare, it is merged into a coarser class (`beaker_large`) rather than dropped.
 
+## Public data to start from
+
+| Dataset | What it has | Licence | Use for us |
+|---|---|---|---|
+| ChemEq25 / Hossain et al., *Sci. Data* 12:1747 (2025), [Mendeley](https://data.mendeley.com/datasets/zptphkynt6/4) | 4,599 phone photos, 6,960 boxes, 25 apparatus classes, YOLO format | CC BY 4.0 | pre-training the type detector |
+| Annotated Chemical Apparatus Image Dataset, Sasaki et al. 2023, [Mendeley](https://data.mendeley.com/datasets/8p2hvgdvpn) | 5,078 images, 6 apparatus + hands | check | extra pre-training data |
+| Vector-LabPics (ChemSelfies, U Toronto) | 7,900 images, vessel + material segmentation, fill levels | not stated, ask authors | later: liquid level, not now |
+
+ChemEq25 covers types only: one `Beaker` class with no sizes, no defects, about 1.5 objects per
+image (few crowded shelves), and a random image-level split, so its reported mAP@50 of 0.99 is
+optimistic. About half of its classes are glassware we need (beaker, conical/round-bottom flasks,
+volumetric flask and pipette, measuring cylinder, burette stand, funnels, test tube, pipette,
+reagent bottle, weighing bottle, wash bottle); the rest (balances, spirit lamp, mortar) can stay
+as extra classes or be dropped.
+
+Plan with it: pre-train the detector on ChemEq25 (types), then fine-tune on our own photos with
+size classes and crowded shelves. This should cut our own photo budget roughly in half per class;
+the defect data still has to be ours.
+
 ## How to take the photos
 
 Quality of the data decides quality of the model; the model choice matters much less.
