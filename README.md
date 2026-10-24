@@ -1,4 +1,4 @@
-# Lab Vision
+# Chelate Vision
 
 On-device recognition for the chemistry lab, built to plug into [Chelate LIMS](https://github.com/Emil9405/Chelate) later and useful on its own before that.
 
@@ -57,7 +57,7 @@ docs/           glassware plan
 
 ```js
 import * as ort from 'onnxruntime-web';
-import { LabelOCR, readLabel, matchCatalog } from 'lab-vision';
+import { LabelOCR, readLabel, matchCatalog } from 'chelate-vision';
 
 ort.env.wasm.wasmPaths = '/ort/';                     // where ort-wasm-simd-threaded.{mjs,wasm} are served
 const ocr = await LabelOCR.create({ ort, load: (f) => fetch('/models/' + f).then((r) => r.arrayBuffer()) });
@@ -86,7 +86,7 @@ Reference OCR in Python (for comparison and, later, data tooling):
 
 ```sh
 pip install -r python/requirements.txt
-PYTHONPATH=python python -m labvision.ocr_ref fixtures/labels/*.jpg --out build/ref --side 960
+PYTHONPATH=python python -m chelate_vision.ocr_ref fixtures/labels/*.jpg --out build/ref --side 960
 ```
 
 ## Licence

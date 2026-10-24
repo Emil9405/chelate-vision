@@ -11,10 +11,10 @@ const out = join(root, 'dist/demo');
 for (const d of ['', 'models', 'ort', 'samples']) mkdirSync(join(out, d), { recursive: true });
 
 const bundle = await build({
-  entryPoints: [join(here, '../src/index.js')], bundle: true, format: 'iife', globalName: 'LV',
+  entryPoints: [join(here, '../src/index.js')], bundle: true, format: 'iife', globalName: 'ChelateVision',
   minify: true, write: false, target: 'es2020', charset: 'ascii',
 });
-const lib = bundle.outputFiles[0].text + '\nconst { LabelOCR, MODEL_FILES, extractLabelFields, matchCatalog } = LV;';
+const lib = bundle.outputFiles[0].text + '\nconst { LabelOCR, MODEL_FILES, extractLabelFields, matchCatalog } = ChelateVision;';
 
 const TITLES = {
   merck_acetone: 'Ацетон, Merck EMSURE', merck_ammonia: 'Аммиак, Merck EMPLURA', merck_anthracene: 'Антрацен, Merck',
@@ -27,11 +27,11 @@ const samples = order.map((name) => {
 });
 
 let html = readFileSync(join(here, 'template.html'), 'utf8');
-html = html.replace('/*LABVISION_BUNDLE*/', () => lib).replace('/*LABVISION_SAMPLES*/', () => `const SAMPLES = ${JSON.stringify(samples)};`);
+html = html.replace('/*CV_BUNDLE*/', () => lib).replace('/*CV_SAMPLES*/', () => `const SAMPLES = ${JSON.stringify(samples)};`);
 // artifact.html: page body only (claude.ai artifact wraps it; models as base64 text because .onnx is not served there)
 // index.html: standalone page for self-hosting (plain .onnx)
-writeFileSync(join(out, 'artifact.html'), html.replace('/*LABVISION_MODEL_MODE*/', 'const MODELS_AS_BASE64 = true;'));
-const standalone = html.replace('/*LABVISION_MODEL_MODE*/', 'const MODELS_AS_BASE64 = false;');
+writeFileSync(join(out, 'artifact.html'), html.replace('/*CV_MODEL_MODE*/', 'const MODELS_AS_BASE64 = true;'));
+const standalone = html.replace('/*CV_MODEL_MODE*/', 'const MODELS_AS_BASE64 = false;');
 writeFileSync(join(out, 'index.html'), `<!doctype html>\n<html lang="ru">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n</head>\n<body>\n${standalone}\n</body>\n</html>\n`);
 
 for (const f of readdirSync(join(root, 'models'))) {

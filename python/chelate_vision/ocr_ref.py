@@ -2,7 +2,7 @@
 lines as JSON ({text, score, box}). The browser pipeline in web/src is checked
 against this output.
 
-    python -m labvision.ocr_ref fixtures/labels/*.jpg --out build/ref --side 960
+    python -m chelate_vision.ocr_ref fixtures/labels/*.jpg --out build/ref --side 960
 """
 import argparse
 import json

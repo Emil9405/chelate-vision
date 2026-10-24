@@ -1,4 +1,4 @@
-<title>Lab Vision</title>
+<title>Chelate Vision</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600&display=swap">
@@ -100,7 +100,7 @@ details summary { cursor: pointer; font-weight: 500; }
 
 <div class="wrap">
   <header>
-    <h1>Lab Vision <small>чтение этикеток реактивов на устройстве</small></h1>
+    <h1>Chelate Vision <small>чтение этикеток реактивов на устройстве</small></h1>
     <span class="status" id="status" role="status"><i></i><span id="statusText">Загрузка моделей…</span></span>
   </header>
 
@@ -135,9 +135,9 @@ details summary { cursor: pointer; font-weight: 500; }
 
 <script type="module">
 import * as ort from 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.wasm.min.mjs';
-/*LABVISION_BUNDLE*/
-/*LABVISION_SAMPLES*/
-/*LABVISION_MODEL_MODE*/
+/*CV_BUNDLE*/
+/*CV_SAMPLES*/
+/*CV_MODEL_MODE*/
 
 const $ = (id) => document.getElementById(id);
 const MB = (n) => (n / 1048576).toFixed(1);

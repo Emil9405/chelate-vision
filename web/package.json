@@ -1,5 +1,5 @@
 {
-  "name": "lab-vision",
+  "name": "chelate-vision",
   "version": "0.1.0",
   "description": "On-device recognition for lab: reagent label reading (OCR + field extraction), glassware (planned).",
   "type": "module",
