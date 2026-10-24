@@ -59,7 +59,7 @@ export function parseDate(raw) {
 
 const BRANDS = [
   ['merck', /\bMERCK\b|MERCK\s?KGAA|EMSURE|EMPLURA|EMPARTA|LICHROSOLV|SUPRAPUR|MILLIPORE|DARMSTADT/],
-  ['sigma', /SIGMA|ALDRICH|PCODE|FLUKA|SUPELCO/],
+  ['sigma', /SIGMA|ALDRICH|PCODE|FLUKA|SUPELCO|SPRUCE\s?STREET|ST\.?\s?LOUIS|^SOURCE\s?#?\s?[A-Z0-9]{5,}/],
   ['vwr', /\bVWR\b|PROLABO|NORMAPUR|ANALAR|RECTAPUR|\bBDH\b/],
   ['macklin', /MACKLIN/],
   ['thermo', /THERMO|FISHER|ACROS|ALFA\s?AESAR/],
@@ -153,6 +153,7 @@ function neighbour(lines, i, accept) {
 // ---------------------------------------------------------------- batch
 
 const KW_BATCH = /(?:\bLOT|\bBATCH|\bCHARGE|\bCH\.?-?B\.?|\bLOTE)\s*(?:NO\.?|NR\.?|NUMBER)?\s*[#:.№]{0,3}\s*/i;
+const KW_SOURCE = /\bSOURCE\s*[#:.№]{0,3}\s*/i;
 const KW_BATCH_ONLY = /^(?:LOT|BATCH|CHARGE|CH\.?-?B\.?|LOTE)\s*(?:NO\.?|NR\.?|NUMBER)?\s*[#:.№]{0,3}\s*$/i;
 const RE_MERCK_BATCH = /(?<![A-Z0-9])([A-Z]\d{7,8})\s?(\d{3})(?![0-9])/;
 const batchish = (s) => /^[A-Z0-9][A-Z0-9\-/ ]{3,20}$/i.test(s) && (s.match(/\d/g) || []).length >= 2 && !/^\d+[.,]\d+$/.test(s);
@@ -165,17 +166,19 @@ function splitMerckBatch(s) {
 function findBatch(lines, brand, exclude) {
   const bad = (v) => !v || exclude.has(v.replace(/[\s.\-]/g, '').toUpperCase());
   const isMerck = brand?.value === 'merck';
-  // 1) keyword and value on the same line: "Lot # WXBC8031V", "LOT#:C804135", "Batch: 11C230505"
-  for (let i = 0; i < lines.length; i++) {
+  // 1) keyword and value on the same line: "Lot # WXBC8031V", "LOT#:C804135", "Batch: 11C230505",
+  //    then Sigma's "Source MKCC2998" if no Lot/Batch keyword carries a value
+  for (const kw of [KW_BATCH, KW_SOURCE]) for (let i = 0; i < lines.length; i++) {
     const t = nfkc(lines[i].text).trim();
-    const m = KW_BATCH.exec(t);
+    const m = kw.exec(t);
     if (!m) continue;
     const rest = t.slice(m.index + m[0].length).trim().split(/\s{2,}|\s(?=[A-Z][a-z])/)[0];
     const v = rest.replace(/\s+/g, ' ').toUpperCase();
     if (v && batchish(v) && !bad(v)) {
       const mb = isMerck ? splitMerckBatch(v) : null;
-      return mb ? { ...mb, confidence: 'high', line: i, source: 'keyword' }
-        : { value: v.replace(/\s+/g, ''), suffix: null, confidence: 'high', line: i, source: 'keyword' };
+      const source = kw === KW_SOURCE ? 'keyword-source' : 'keyword';
+      return mb ? { ...mb, confidence: 'high', line: i, source }
+        : { value: v.replace(/\s+/g, ''), suffix: null, confidence: 'high', line: i, source };
     }
   }
   // 2) Merck layout: "K47917114 622" (batch + 3-digit tail), with or without the tiny "Lot:" label
@@ -312,10 +315,11 @@ const NAME_STOP = new RegExp([
   'made in', 'merck', 'kgaa', 'darmstadt', 'millipore', 'corporation', 'concord', 'billerica', 'germany', '\\busa\\b', '\\btel\\b',
   'sigma', 'aldrich', 'macklin', '\\bvwr\\b', 'prolabo', 'international', 'rue ', 'fontenay',
   'specification', 'spec\\.', 'assay', 'identity', 'melting', 'passes', 'contact', 'r&d use', 'not for drug', 'for r&d',
-  'product', 'batch', '\\blot\\b', 'received', 'opened', 'guaranteed', 'expir', 'pcode', 'cas',
-  'for analysis', 'for synthesis', 'analytical reagent', 'acs', 'reagent', 'emsure', 'emplura', 'normapur', 'analar',
-  '\\bmax\\b', '\\bmin\\b', 'ppm', 'hazen', 'apha', 'colour', 'color', 'residue', 'heavy metals', 'chloride', 'sulphate', 'sulfate',
-  'danger', 'warning', 'gefahr', 'tehlike', 'r&d',
+  'product', 'batch', '\\blot\\b', 'received', 'opened', 'guaranteed', 'expir', 'pcode', '\\bcas\\b', '^source',
+  'for analysis', 'for synthesis', 'analytical reagent', '\\bacs\\b', 'reagent', 'emsure', 'emplura', 'normapur', 'analar',
+  '\\bmax\\b', '\\bmin\\b', 'ppm', 'hazen', 'apha', 'colour', 'color', 'residue', 'heavy metals', '^chloride', '^sulphate', '^sulfate',
+  'danger', 'warning', 'gefahr', 'tehlike', 'r&d', 'store at', 'store under', 'viscosity', 'available', 'sensitive', 'household',
+  'dye content', 'moistened', 'spruce', 'st\\.? ?louis', 'contains\\b', '^\\(', 'enthält', 'contient', 'contiene', 'contém',
 ].join('|'), 'i');
 
 const lettersOnly = (s) => nfkc(s).toLowerCase().replace(/[^a-zà-ž]/g, '');
@@ -336,23 +340,58 @@ export function similarity(a, b) {
   return 1 - dp[b.length] / Math.max(a.length, b.length);
 }
 
-function nameCandidates(lines, used) {
+// word parts that occur in chemical names and almost never in label boilerplate
+const CHEM_PART = /(?:ane|ene|yne|anol|enol|ol\b|al\b|one\b|ide\b|ate\b|ite\b|ium|ine\b|ose\b|acid|oxy|hydr|chlor|brom|iod|fluor|nitr|sulf|sulph|phosph|benz|phen|meth|eth|prop|but|carb|amm|amin|amid|sil|ferr|cyan|palladi|platin|cupr|copper|iron|zinc|sodium|potass|calcium|magnes|lithium|barium|nickel|cobalt|silver|gold|titan|alumin|poly|tetra|tri|di(?=[a-z])|hexa|penta|oxide|hydrate)/gi;
+
+function chemScore(t) {
+  const m = lettersOnly(t).match(CHEM_PART) || [];
+  return Math.min(m.length, 4);
+}
+
+// word order differs between languages: "Sulfuric acid" / "Acido sulfurico"
+function looseSimilarity(a, b) {
+  const sorted = (t) => nfkc(t).toLowerCase().split(/[^a-zà-ž]+/).filter(Boolean).sort().join(' ');
+  return Math.max(similarity(a, b), similarity(sorted(a), sorted(b)));
+}
+
+function nameCandidates(lines, used, articleLine) {
+  const ok = (t) => {
+    const letters = (t.match(/[A-Za-zÀ-ž]/g) || []).length;
+    return letters >= 4 && letters / t.length >= 0.6 && !NAME_STOP.test(t);
+  };
   const cand = [];
   lines.forEach((l, i) => {
     if (used.has(i)) return;
     const t = nfkc(l.text).replace(/\s+/g, ' ').trim();
-    const letters = (t.match(/[A-Za-zÀ-ž]/g) || []).length;
-    if (letters < 4 || letters / t.length < 0.6 || NAME_STOP.test(t)) return;
-    cand.push({ text: t, line: i, h: boxGeom(l.box).h, ocr: l.score ?? 1 });
+    if (!ok(t)) return;
+    cand.push({ text: t, line: i, h: boxGeom(l.box).h, ocr: l.score ?? 1, joined: false });
+    // a name wrapped onto the next line: "Poly(dimethylsiloxane), hydroxy" + "terminated",
+    // "Tetrakis(triphenylphosphine)-" + "palladium(0)", "…sulfate hexa" + "hydrate"
+    const n = lines[i + 1];
+    if (!n || used.has(i + 1)) return;
+    const a = boxGeom(l.box), b = boxGeom(n.box);
+    const nt = nfkc(n.text).replace(/\s+/g, ' ').trim();
+    const aligned = Math.abs(a.x0 - b.x0) < 2.5 * a.h && b.y0 - a.y1 < 1.2 * a.h && b.h > 0.6 * a.h && b.h < 1.6 * a.h;
+    const wraps = /[-,(]$/.test(t) || /^[a-z(]/.test(nt);
+    if (aligned && wraps && /[A-Za-z]/.test(nt) && !NAME_STOP.test(nt)) {
+      const text = /-$/.test(t) ? t + nt : `${t} ${nt}`;
+      cand.push({ text, line: i, h: a.h, ocr: Math.min(l.score ?? 1, n.score ?? 1), joined: true });
+    }
   });
   if (!cand.length) return [];
   const hmax = Math.max(...cand.map((c) => c.h)) || 1;
   for (const c of cand) {
-    const similar = cand.filter((o) => o !== c && similarity(o.text, c.text) >= 0.6).length;
+    const peers = cand.filter((o) => o !== c && o.line !== c.line && looseSimilarity(o.text, c.text) >= 0.6);
+    const similar = peers.length;
+    // translations: Merck and VWR print the English name first, so the topmost of a cluster wins
+    const laterTranslation = peers.some((o) => o.line < c.line) ? 0.25 : 0;
     // synonym lists ("Kalium-…, Hexacyanoferrate…, …") and long lines are rarely the main name
-    const listPenalty = (c.text.match(/,/g) || []).length ? 0.35 : 0;
-    const longPenalty = c.text.length > 40 ? 0.2 : 0;
-    c.score = c.h / hmax + 0.2 * Math.min(similar, 4) + 0.2 * c.ocr - listPenalty - longPenalty;
+    // (", hydroxy terminated" is part of a name; ", Cloruro di…" starts another one)
+    const listPenalty = /,\s?[A-Z]/.test(c.text) || (c.text.match(/,/g) || []).length >= 3 ? 0.35 : 0;
+    const longPenalty = c.text.length > 60 ? 0.2 : 0;
+    const near = articleLine != null && c.line > articleLine && c.line - articleLine <= 4 ? 0.25 / (c.line - articleLine) : 0;
+    c.score = 0.6 * (c.h / hmax) + 0.15 * Math.min(similar, 4) + 0.15 * c.ocr + 0.15 * chemScore(c.text)
+      + near + (c.joined ? 0.15 : 0) - listPenalty - longPenalty - laterTranslation;
   }
   cand.sort((a, b) => b.score - a.score);
   const out = [];
@@ -383,6 +422,6 @@ export function extractLabelFields(lines) {
   const formula = findFormula(lines);
   const mw = findMw(lines);
   const used = new Set([article, batch, cas, expiry, pcode, formula, mw].filter(Boolean).map((f) => f.line));
-  const names = nameCandidates(lines, used);
+  const names = nameCandidates(lines, used, article?.line);
   return { brand, article, batch, cas, expiry, pcode, pack, grade, purity, formula, mw, names };
 }

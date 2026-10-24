@@ -40,6 +40,50 @@ test('real OCR output of the six fixtures', () => {
   }
 });
 
+test('second photo set (13 labels, mostly Sigma repacks): OCR output from the JS pipeline', () => {
+  const truthH = JSON.parse(readFileSync(join(here, '../../fixtures/labels/truth_holdout.json'), 'utf8'));
+  const dir = join(here, 'vectors/holdout');
+  for (const f of readdirSync(dir).filter((x) => x.endsWith('.json'))) {
+    const name = f.replace('.json', '');
+    const t = truthH[name];
+    const r = extractLabelFields(JSON.parse(readFileSync(join(dir, f), 'utf8')).lines);
+    assert.equal(r.article?.value?.toUpperCase(), t.article.toUpperCase(), `${name} article`);
+    if (t.batch) assert.equal(r.batch?.value, t.batch, `${name} batch`);
+    assert.equal(r.cas?.value ?? null, t.cas, `${name} cas`);
+    if (t.pcode) assert.equal(r.pcode?.value, t.pcode, `${name} pcode`);
+  }
+});
+
+test('Sigma repack label: batch printed as "Source", brand from the address line', () => {
+  const r = extractLabelFields(L('432997-100ML', 'SourceMKCC2998', 'Poly(dimethylsiloxane),hydroxy', 'CAS-No: 70131-67-8', 'SIGMA-ALDRICH, Co., 3050 Spruce Street, St. Louis'));
+  assert.equal(r.batch.value, 'MKCC2998');
+  assert.equal(r.batch.source, 'keyword-source');
+  assert.equal(r.brand.value, 'sigma');
+  const r2 = extractLabelFields(L('215406-500G', 'Lot#MKCH9089', 'Source ABCD1234'));
+  assert.equal(r2.batch.value, 'MKCH9089', 'Lot wins over Source');
+});
+
+test('name wrapped onto the next line is joined', () => {
+  const lines = [
+    { text: '8.14761.0005', box: box(240, 790, 160, 30) },
+    { text: 'Tetrakis(triphenylphosphine)-', box: box(250, 840, 330, 30) },
+    { text: 'palladium(0)', box: box(250, 875, 140, 30) },
+    { text: 'for synthesis', box: box(250, 910, 140, 25) },
+  ];
+  assert.equal(extractLabelFields(lines).names[0].value, 'Tetrakis(triphenylphosphine)-palladium(0)');
+});
+
+test('translations: the first (English) name wins, word order may differ', () => {
+  const lines = [
+    { text: '1.00713.2500', box: box(650, 530, 270, 60) },
+    { text: 'Sulfuric acid 95-98%', box: box(650, 730, 280, 50) },
+    { text: 'Schwefelsaure 95-98%', box: box(645, 840, 260, 50) },
+    { text: 'Acido sulfurico 95-98%', box: box(640, 900, 260, 50) },
+    { text: 'Acide sulfurique 95-98%', box: box(640, 950, 260, 52) },
+  ];
+  assert.equal(extractLabelFields(lines).names[0].value, 'Sulfuric acid 95-98%');
+});
+
 test('Merck article: catalog and pack code', () => {
   const r = extractLabelFields(L('K47917114 622', '1.00014.2500', 'EMSURE', 'Merck KGaA, 64271 Darmstadt'));
   assert.deepEqual([r.article.value, r.article.catalog, r.article.pack_code], ['1.00014.2500', '100014', '2500']);

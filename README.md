@@ -26,18 +26,18 @@ Terminology follows Chelate: **lot** = article number with pack, **batch** = man
 
 ## Results so far
 
-Six real photos (Merck ×3, Sigma, VWR, Macklin) in `fixtures/labels/`, ground truth in `truth.json`:
+Two photo sets. Set A: six photos (Merck ×3, Sigma, VWR, Macklin), `fixtures/labels/truth.json`; the pipeline was tuned on it. Set B: 13 further labels (Sigma ×10, mostly repack labels, Merck ×3), ground truth written from the photos before running the pipeline, `fixtures/labels/truth_holdout.json`; photos are not in the repo, their OCR output is in `web/test/vectors/holdout/`.
 
-| field | correct |
-|---|---|
-| brand | 6/6 |
-| article (lot) | 6/6 |
-| batch | 6/6 |
-| CAS (printed on 4) | 4/4 |
-| expiry (printed on 1) | 1/1 |
-| name in top 3 candidates | 6/6 |
+| field | set A (tuned on) | set B, first blind run | set B after fixes |
+|---|---|---|---|
+| article (lot) | 6/6 | **13/13** | 13/13 |
+| CAS (where readable) | 4/4 | **10/10**, no false CAS on the 3 without one | 10/10 |
+| PCode | 1/1 | 2/2 | 2/2 |
+| batch (where readable) | 6/6 | 3/10 | 10/10 |
+| brand | 6/6 | 7/13 | 12/13 |
+| name in top 3 | 6/6 | 6/13 | 13/13 |
 
-The pipeline settings (two-pass detection, box threshold 0.4, stretched retry) were tuned on these same six photos, so this is not an independent accuracy estimate. Next step is a held-out set of 30–50 new label photos.
+Blind misses on set B were rule gaps, not OCR errors: Sigma repack labels print the batch as `Source MKCC2998` (keyword not known), often lose the `SIGMA-ALDRICH` line, and wrap long names over two lines. After the fixes set B is no longer independent either; the next unseen set will tell. The three set-B photos that duplicated set A at higher resolution (2160×3840) gave the same results and are not counted.
 
 Speed in headless Chromium (wasm, 1 thread, server CPU): 2–7 s per photo, mostly recognition of the many small lines. A phone will be slower; measure on the real device with the demo.
 

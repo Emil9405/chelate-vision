@@ -1,0 +1,126 @@
+{
+ "h01_sigma_eosin": {
+  "brand": "sigma",
+  "article": "E6003-25G",
+  "batch": null,
+  "batch_note": "Source SHBM?232: blurry, 9 vs 8 unclear",
+  "cas": "17372-87-1",
+  "name": "Eosin Y disodium salt",
+  "pcode": null,
+  "expiry": null
+ },
+ "h02_sigma_pdms": {
+  "brand": "sigma",
+  "article": "432997-100ML",
+  "batch": "MKCC2998",
+  "cas": "70131-67-8",
+  "name": "Poly(dimethylsiloxane), hydroxy terminated",
+  "pcode": null,
+  "expiry": null
+ },
+ "h03_sigma_pdms750": {
+  "brand": "sigma",
+  "article": "481963-100ML",
+  "batch": "07519CJ",
+  "cas": "70131-67-8",
+  "name": "Poly(dimethylsiloxane), hydroxy terminated",
+  "pcode": null,
+  "expiry": null
+ },
+ "h04_sigma_diiodotfb": {
+  "brand": "sigma",
+  "article": "282286-5G",
+  "batch": "STBL1028",
+  "cas": "392-57-4",
+  "name": "1,4-Diiodotetrafluorobenzene",
+  "pcode": null,
+  "expiry": null
+ },
+ "h05_sigma_napf6": {
+  "brand": "sigma",
+  "article": "208051-50G",
+  "batch": "MKCT5249",
+  "cas": null,
+  "name": "Sodium hexafluorophosphate",
+  "pcode": "1003621057",
+  "expiry": null
+ },
+ "h06_merck_pdpph3": {
+  "brand": "merck",
+  "article": "8.14761.0005",
+  "batch": "S5754661",
+  "batch_suffix": "335",
+  "cas": "14221-01-3",
+  "name": "Tetrakis(triphenylphosphine)palladium(0)",
+  "pcode": null,
+  "expiry": null
+ },
+ "h07_sigma_diiodoethane": {
+  "brand": "sigma",
+  "article": "D122807-25G",
+  "batch": "STBK9383",
+  "cas": "624-73-7",
+  "name": "1,2-Diiodoethane",
+  "pcode": null,
+  "expiry": null
+ },
+ "h08_sigma_pdcl2": {
+  "brand": "sigma",
+  "article": "205885-5G",
+  "batch": "MKCT3040",
+  "cas": "7647-10-1",
+  "name": "Palladium(II) chloride",
+  "pcode": null,
+  "expiry": null
+ },
+ "h09_sigma_irgacure": {
+  "brand": "sigma",
+  "article": "410896-10G",
+  "batch": "MKCS9843",
+  "cas": "106797-53-9",
+  "name": "2-Hydroxy-4'-(2-hydroxyethoxy)-2-methylpropiophenone",
+  "pcode": null,
+  "expiry": null
+ },
+ "h10_merck_h2so4": {
+  "brand": "merck",
+  "article": "1.00713.2500",
+  "batch": "K48072613",
+  "batch_suffix": "626",
+  "cas": "7664-93-9",
+  "name": "Sulfuric acid 95-98%",
+  "pcode": null,
+  "expiry": null
+ },
+ "h11_sigma_mohr": {
+  "brand": "sigma",
+  "article": "215406-500G",
+  "batch": "MKCH9089",
+  "cas": null,
+  "cas_note": "cut at left edge (783-85-9)",
+  "name": "Ammonium iron(II) sulfate hexahydrate",
+  "pcode": "1002854855",
+  "expiry": null
+ },
+ "h12_sigma_dnp": {
+  "brand": "sigma",
+  "article": "42195-1G",
+  "batch": null,
+  "batch_note": "Source # / Batch # tiny and cut off, unreadable",
+  "cas": null,
+  "name": "3,4-Dinitrophenol",
+  "pcode": null,
+  "expiry": null
+ },
+ "h16_merck_anthracene_side2": {
+  "brand": "merck",
+  "article": "8.20109.0250",
+  "batch": null,
+  "batch_note": "batch not on this side",
+  "cas": "120-12-7",
+  "name": "Anthracene",
+  "pcode": null,
+  "expiry": null,
+  "note": "same bottle as fixture, other side"
+ }
+}

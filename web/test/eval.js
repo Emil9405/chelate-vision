@@ -6,7 +6,9 @@ import { fileURLToPath } from 'node:url';
 import { extractLabelFields, similarity } from '../src/fields.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const truth = JSON.parse(readFileSync(join(here, '../../fixtures/labels/truth.json'), 'utf8'));
+const ti = process.argv.indexOf('--truth');
+const truthPath = ti > 0 ? process.argv[ti + 1] : join(here, '../../fixtures/labels/truth.json');
+const truth = JSON.parse(readFileSync(truthPath, 'utf8'));
 const dir = process.argv[2];
 const verbose = process.argv.includes('--verbose');
 const FIELDS = ['brand', 'article', 'batch', 'cas', 'expiry', 'pcode', 'name'];
