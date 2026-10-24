@@ -1,0 +1,361 @@
+<title>Lab Vision</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600&display=swap">
+<style>
+/* Layout: instrument-panel tool — photo with detected text boxes on the left, read-out of label fields on the right; stacks on phones. */
+:root {
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --ink: #16202b;
+  --muted: #5a6775;
+  --line: #d3dae2;
+  --accent: #1d5fa6;
+  --accent-soft: #e2ecf8;
+  --ok: #23794a;
+  --ok-soft: #e1f2e8;
+  --warn: #9a6200;
+  --warn-soft: #fbf0d9;
+  --bad: #b3261e;
+  --bad-soft: #fbe4e2;
+  --box-key: #1d5fa6;
+  --box-other: rgba(90, 103, 117, .55);
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f151b; --surface: #17202a; --ink: #e5ecf2; --muted: #9babb9; --line: #2a3643;
+    --accent: #72aaf0; --accent-soft: #1b2c42; --ok: #62c890; --ok-soft: #173225; --warn: #e3a843; --warn-soft: #3a2c12;
+    --bad: #f17a70; --bad-soft: #3d1c1a; --box-key: #72aaf0; --box-other: rgba(155, 171, 185, .5); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f151b; --surface: #17202a; --ink: #e5ecf2; --muted: #9babb9; --line: #2a3643;
+  --accent: #72aaf0; --accent-soft: #1b2c42; --ok: #62c890; --ok-soft: #173225; --warn: #e3a843; --warn-soft: #3a2c12;
+  --bad: #f17a70; --bad-soft: #3d1c1a; --box-key: #72aaf0; --box-other: rgba(155, 171, 185, .5); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--f-body); }
+.wrap > * { min-width: 0; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 20px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 20px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 20px; }
+h1 { font: 600 1.9rem/1.1 var(--f-display); letter-spacing: .01em; margin: 0; }
+h1 small { font: 400 .95rem var(--f-body); color: var(--muted); margin-left: 10px; letter-spacing: 0; }
+h2 { font: 600 .78rem var(--f-body); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0; }
+.status { display: inline-flex; align-items: center; gap: 8px; font: 500 .85rem var(--f-mono); color: var(--muted); }
+.status i { width: 9px; height: 9px; border-radius: 50%; background: var(--warn); display: inline-block; }
+.status.ready i { background: var(--ok); }
+.status.error i { background: var(--bad); }
+.controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.btn { display: inline-flex; align-items: center; gap: 8px; font: 600 .95rem var(--f-body); padding: 11px 18px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: var(--surface); cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn:disabled { opacity: .5; cursor: progress; }
+.btn:focus-visible, .thumb:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+#file { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.samples { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.thumb { flex: 0 0 auto; width: 64px; height: 84px; border-radius: 6px; border: 2px solid transparent; padding: 0; background: var(--surface); cursor: pointer; overflow: hidden; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb[aria-pressed="true"] { border-color: var(--accent); }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 20px; align-items: start; }
+@media (max-width: 820px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.photo { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: grid; gap: 8px; min-width: 0; }
+.photo canvas { width: 100%; height: auto; display: block; border-radius: 6px; max-height: 72vh; object-fit: contain; }
+.meta { font: .8rem var(--f-mono); color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.readout { display: grid; gap: 16px; min-width: 0; }
+.fields { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.row { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr) auto; gap: 4px 14px; align-items: center; padding: 11px 14px; border-top: 1px solid var(--line); }
+.row:first-child { border-top: 0; }
+.row .k { font: 500 .78rem var(--f-body); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.row .v { font: 500 1.05rem var(--f-mono); overflow-wrap: anywhere; min-width: 0; }
+.row .v.none { color: var(--muted); font: italic .9rem var(--f-body); }
+.row .note { grid-column: 2 / -1; font-size: .82rem; color: var(--muted); overflow-wrap: anywhere; }
+@media (max-width: 480px) {
+  .row { grid-template-columns: 5.2rem minmax(0, 1fr) auto; gap: 4px 10px; }
+  h1 small { display: block; margin: 6px 0 0; }
+}
+.row canvas.crop { grid-column: 2 / -1; max-width: 100%; height: 34px; width: auto; border-radius: 4px; border: 1px solid var(--line); background: var(--bg); }
+.chip { font: 600 .72rem var(--f-body); letter-spacing: .03em; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+.chip.high { background: var(--ok-soft); color: var(--ok); }
+.chip.medium { background: var(--warn-soft); color: var(--warn); }
+.chip.low { background: var(--bad-soft); color: var(--bad); }
+.chip.none { background: var(--bg); color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 10px; min-width: 0; }
+.match { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: baseline; padding: 8px 0; border-top: 1px dashed var(--line); }
+.match:first-of-type { border-top: 0; }
+.match b { font-weight: 600; }
+.match .why { grid-column: 1 / -1; font: .78rem var(--f-mono); color: var(--muted); }
+.match .s { font: 600 .9rem var(--f-mono); font-variant-numeric: tabular-nums; }
+.hint { font-size: .85rem; color: var(--muted); margin: 0; max-width: 65ch; }
+details summary { cursor: pointer; font-weight: 500; }
+.lines { font: .8rem/1.55 var(--f-mono); max-height: 260px; overflow: auto; margin: 8px 0 0; padding: 0; list-style: none; }
+.lines li { display: flex; gap: 10px; }
+.lines li span:first-child { color: var(--muted); min-width: 3.2em; font-variant-numeric: tabular-nums; }
+.lines li.key { color: var(--accent); }
+.busy { position: relative; }
+.busy::after { content: "Распознаю…"; position: absolute; inset: 10px; display: grid; place-items: center; background: color-mix(in srgb, var(--surface) 70%, transparent); font: 600 1rem var(--f-body); border-radius: 6px; }
+@media (prefers-reduced-motion: no-preference) { .status i { transition: background .3s; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Lab Vision <small>чтение этикеток реактивов на устройстве</small></h1>
+    <span class="status" id="status" role="status"><i></i><span id="statusText">Загрузка моделей…</span></span>
+  </header>
+
+  <section class="controls" aria-label="Источник фото">
+    <label class="btn" for="file" id="pickBtn">Сфотографировать или выбрать фото</label>
+    <input type="file" id="file" accept="image/*" capture="environment">
+    <div class="samples" id="samples" role="group" aria-label="Примеры этикеток"></div>
+  </section>
+
+  <section class="main">
+    <div class="photo" id="photoBox">
+      <canvas id="view" width="10" height="10" aria-label="Фото этикетки с найденными строками"></canvas>
+      <div class="meta" id="meta"></div>
+    </div>
+    <div class="readout">
+      <div class="fields" id="fields"></div>
+      <div class="panel">
+        <h2>Поиск в справочнике</h2>
+        <p class="hint">Пример справочника из 8 позиций. В Chelate здесь будет ваша база реактивов: точное совпадение артикула или CAS, нечёткое по названию.</p>
+        <div id="matches"></div>
+      </div>
+      <div class="panel">
+        <details>
+          <summary>Все распознанные строки</summary>
+          <ul class="lines" id="lines"></ul>
+        </details>
+        <button class="btn ghost" type="button" id="copyBtn">Скопировать результат (JSON)</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script type="module">
+import * as ort from 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.wasm.min.mjs';
+/*LABVISION_BUNDLE*/
+/*LABVISION_SAMPLES*/
+/*LABVISION_MODEL_MODE*/
+
+const $ = (id) => document.getElementById(id);
+const MB = (n) => (n / 1048576).toFixed(1);
+const FIELD_ROWS = [
+  ['article', 'Лот'], ['batch', 'Батч'], ['cas', 'CAS'], ['name', 'Название'], ['brand', 'Бренд'],
+  ['expiry', 'Срок'], ['pack', 'Фасовка'], ['pcode', 'PCode'], ['grade', 'Квалиф.'], ['purity', 'Чистота'], ['formula', 'Формула'], ['mw', 'M, г/моль'],
+];
+const CONF = { high: 'уверенно', medium: 'проверь', low: 'сомнительно' };
+const BRAND = { merck: 'Merck', sigma: 'Sigma-Aldrich', vwr: 'VWR', macklin: 'Macklin', thermo: 'Thermo Fisher', tci: 'TCI', honeywell: 'Honeywell', carlroth: 'Carl Roth', panreac: 'PanReac' };
+const CATALOG = [
+  { id: 'R-014', name: 'Acetone', cas: '67-64-1', articles: ['1.00014.2500', '1.00014.1000'] },
+  { id: 'R-022', name: 'Ammonia solution 32%', synonyms: ['Ammonium hydroxide'], cas: '1336-21-6', articles: ['1.05426.1000'] },
+  { id: 'R-031', name: 'Anthracene', cas: '120-12-7', articles: ['8.20109.0250'] },
+  { id: 'R-047', name: 'n-Hexane', synonyms: ['Hexane'], cas: '110-54-3', articles: ['24608.321'] },
+  { id: 'R-052', name: '2-Chlorophenol', synonyms: ['o-Chlorophenol'], cas: '95-57-8', articles: ['C805172-500g'] },
+  { id: 'R-063', name: 'Potassium hexacyanoferrate(III)', synonyms: ['Potassium ferricyanide'], cas: '13746-66-2', articles: ['244023-100G'] },
+  { id: 'R-071', name: 'Ammonium chloride', cas: '12125-02-9', articles: ['1.01145.0500'] },
+  { id: 'R-088', name: 'Acetonitrile', cas: '75-05-8', articles: ['1.00030.2500'] },
+];
+
+let ocr = null;
+let current = null; // { name, bitmapCanvas, result }
+
+function setStatus(text, state) {
+  $('statusText').textContent = text;
+  $('status').className = 'status' + (state ? ' ' + state : '');
+}
+
+async function fetchWithProgress(url, onBytes) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
+  if (!res.body) { const b = await res.arrayBuffer(); onBytes(b.byteLength); return b; }
+  const reader = res.body.getReader();
+  const parts = []; let n = 0;
+  for (;;) { const { done, value } = await reader.read(); if (done) break; parts.push(value); n += value.length; onBytes(value.length); }
+  const out = new Uint8Array(n); let o = 0;
+  for (const p of parts) { out.set(p, o); o += p.length; }
+  return out.buffer;
+}
+
+function fromBase64(text) {
+  const bin = atob(text.replace(/\s+/g, ''));
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+async function loadModels() {
+  ort.env.wasm.numThreads = 1;
+  ort.env.wasm.wasmPaths = { mjs: 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort-wasm-simd-threaded.mjs', wasm: new URL('ort/ort-wasm-simd-threaded.wasm', location.href).href };
+  const files = Object.values(MODEL_FILES);
+  const sizes = { 'ppocr_v3_det.onnx': 2432880, 'ppocr_v3_rec.onnx': 10690752, 'ppocr_mobile_v2_cls.onnx': 585532, 'ppocr_v3_keys.txt': 26000 };
+  // MODELS_AS_BASE64: hosts that do not serve .onnx get the models as base64 text files
+  const enc = (f) => (MODELS_AS_BASE64 && f.endsWith('.onnx') ? 4 / 3 : 1);
+  const total = Object.entries(sizes).reduce((a, [f, b]) => a + b * enc(f), 0);
+  let got = 0;
+  const cache = {};
+  await Promise.all(files.map(async (f) => {
+    const b64 = MODELS_AS_BASE64 && f.endsWith('.onnx');
+    const buf = await fetchWithProgress('models/' + f + (b64 ? '.b64.txt' : ''), (n) => { got += n; setStatus(`Загрузка моделей ${MB(Math.min(got, total))} / ${MB(total)} МБ`); });
+    cache[f] = b64 ? fromBase64(new TextDecoder().decode(buf)) : buf;
+  }));
+  setStatus('Запуск движка…');
+  ocr = await LabelOCR.create({ ort, load: async (f) => (f.endsWith('.txt') ? new TextDecoder().decode(cache[f]) : cache[f]) });
+  setStatus('Готово · работает на устройстве', 'ready');
+}
+
+async function imageFromSource(src) {
+  const bmp = src instanceof Blob ? await createImageBitmap(src, { imageOrientation: 'from-image' }) : await new Promise((ok, bad) => { const im = new Image(); im.onload = () => ok(im); im.onerror = bad; im.src = src; });
+  const w0 = bmp.width, h0 = bmp.height, k = Math.min(1, 2600 / Math.max(w0, h0));
+  const c = document.createElement('canvas');
+  c.width = Math.round(w0 * k); c.height = Math.round(h0 * k);
+  c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+  return c;
+}
+
+function fieldValue(key, f) {
+  const x = f[key];
+  if (key === 'name') return f.names?.[0] ? { value: f.names[0].value, confidence: 'medium', line: f.names[0].line } : null;
+  if (!x) return null;
+  if (key === 'brand') return { ...x, value: BRAND[x.value] || x.value };
+  if (key === 'pack') return { ...x, value: `${String(x.value).replace('.', ',')} ${x.unit}` };
+  if (key === 'batch' && x.suffix) return { ...x, value: x.value, note: `На этикетке: ${x.value} ${x.suffix}. Хвост ${x.suffix} в Data Matrix не входит, сохраняется отдельно.` };
+  if (key === 'cas' && x.invalid) return { ...x, value: x.raw, confidence: 'low', note: 'Не сходится контрольная цифра CAS — проверьте по фото.' };
+  if (key === 'cas' && x.repaired) return { ...x, note: `Прочитано «${x.raw}», исправлено по контрольной цифре.` };
+  if (key === 'article' && x.format === 'merck') return { ...x, note: `Каталожный ${x.catalog}, код фасовки ${x.pack_code}` };
+  if (key === 'expiry' && x.kind === 'retest') return { ...x, note: 'Дата повторного контроля (retest)' };
+  return x;
+}
+
+function drawCrop(canvas, src, box) {
+  const xs = box.map((p) => p[0]), ys = box.map((p) => p[1]);
+  const x0 = Math.max(0, Math.min(...xs) - 4), y0 = Math.max(0, Math.min(...ys) - 4);
+  const w = Math.min(src.width, Math.max(...xs) + 4) - x0, h = Math.min(src.height, Math.max(...ys) + 4) - y0;
+  const scale = 68 / h;
+  canvas.width = Math.max(1, Math.round(w * scale)); canvas.height = 68;
+  canvas.getContext('2d').drawImage(src, x0, y0, w, h, 0, 0, canvas.width, canvas.height);
+}
+
+function render() {
+  const { canvas: src, lines, fields, timings, stored } = current;
+  document.body.dataset.runs = String(Number(document.body.dataset.runs || 0) + 1);
+  const view = $('view');
+  const k = Math.min(1, 1400 / Math.max(src.width, src.height));
+  view.width = Math.round(src.width * k); view.height = Math.round(src.height * k);
+  const g = view.getContext('2d');
+  g.drawImage(src, 0, 0, view.width, view.height);
+  const css = getComputedStyle(document.documentElement);
+  const keyLines = new Set(['article', 'batch', 'cas', 'expiry', 'pcode'].map((x) => fields[x]?.line).filter((x) => x != null));
+  lines.forEach((l, i) => {
+    g.beginPath();
+    l.box.forEach(([x, y], j) => (j ? g.lineTo(x * k, y * k) : g.moveTo(x * k, y * k)));
+    g.closePath();
+    g.lineWidth = keyLines.has(i) ? 3 : 1.5;
+    g.strokeStyle = keyLines.has(i) ? css.getPropertyValue('--box-key') : css.getPropertyValue('--box-other');
+    g.stroke();
+  });
+  $('meta').textContent = '';
+  const meta = [`${src.width}×${src.height}`, `${lines.length} строк`];
+  if (timings) meta.push(`распознано за ${(timings.total / 1000).toFixed(1)} с`);
+  if (stored) meta.push('сохранённый результат: модели ещё грузятся');
+  for (const m of meta) { const s = document.createElement('span'); s.textContent = m; $('meta').append(s); }
+
+  const box = $('fields'); box.textContent = '';
+  for (const [key, label] of FIELD_ROWS) {
+    const v = fieldValue(key, fields);
+    if (!v && !['article', 'batch', 'cas', 'name', 'expiry'].includes(key)) continue;
+    const row = document.createElement('div'); row.className = 'row';
+    const kEl = document.createElement('div'); kEl.className = 'k'; kEl.textContent = label;
+    const vEl = document.createElement('div'); vEl.className = 'v' + (v ? '' : ' none'); vEl.textContent = v ? String(v.value) : 'не найдено';
+    const chip = document.createElement('span'); chip.className = 'chip ' + (v ? v.confidence : 'none'); chip.textContent = v ? CONF[v.confidence] : '—';
+    row.append(kEl, vEl, chip);
+    if (key === 'name' && fields.names?.length > 1) {
+      const n = document.createElement('div'); n.className = 'note';
+      n.textContent = 'Другие варианты: ' + fields.names.slice(1, 4).map((x) => x.value).join(' · ');
+      row.append(n);
+    }
+    if (v?.note) { const n = document.createElement('div'); n.className = 'note'; n.textContent = v.note; row.append(n); }
+    if (v?.line != null && lines[v.line] && ['article', 'batch', 'cas', 'expiry', 'name'].includes(key)) {
+      const c = document.createElement('canvas'); c.className = 'crop'; c.setAttribute('aria-label', 'Фрагмент фото'); drawCrop(c, src, lines[v.line].box); row.append(c);
+    }
+    box.append(row);
+  }
+
+  const m = matchCatalog(fields, CATALOG, { limit: 3 });
+  const mm = $('matches'); mm.textContent = '';
+  if (!m.length) { const p = document.createElement('p'); p.className = 'hint'; p.textContent = 'Похожих позиций нет — это новый реактив, данные берутся с этикетки.'; mm.append(p); }
+  for (const r of m) {
+    const d = document.createElement('div'); d.className = 'match';
+    const n = document.createElement('div'); const b = document.createElement('b'); b.textContent = r.entry.name; n.append(b, ` · ${r.entry.cas}`);
+    const s = document.createElement('span'); s.className = 's'; s.textContent = (r.score * 100).toFixed(0) + '%';
+    const why = document.createElement('div'); why.className = 'why'; why.textContent = `${r.id} · совпало: ${r.reasons.join(', ')}`;
+    d.append(n, s, why); mm.append(d);
+  }
+
+  const ul = $('lines'); ul.textContent = '';
+  lines.forEach((l, i) => {
+    const li = document.createElement('li'); if (keyLines.has(i)) li.className = 'key';
+    const a = document.createElement('span'); a.textContent = l.score.toFixed(2);
+    const b = document.createElement('span'); b.textContent = l.text;
+    li.append(a, b); ul.append(li);
+  });
+}
+
+async function process(src, name) {
+  const canvas = await imageFromSource(src);
+  const sample = SAMPLES.find((s) => s.name === name);
+  if (!ocr && sample) {
+    current = { name, canvas, lines: sample.lines, fields: extractLabelFields(sample.lines), stored: true };
+    render(); return;
+  }
+  if (!ocr) { setStatus('Модели ещё загружаются, подождите', ''); return; }
+  $('photoBox').classList.add('busy'); $('pickBtn').setAttribute('aria-disabled', 'true');
+  await new Promise((r) => setTimeout(r, 30));
+  try {
+    const img = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+    const { lines, timings } = await ocr.recognize(img);
+    current = { name, canvas, lines, timings, fields: extractLabelFields(lines) };
+    render();
+  } catch (e) {
+    setStatus('Ошибка распознавания: ' + e.message, 'error');
+  } finally {
+    $('photoBox').classList.remove('busy'); $('pickBtn').removeAttribute('aria-disabled');
+  }
+}
+
+function buildSamples() {
+  for (const s of SAMPLES) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'thumb'; b.setAttribute('aria-pressed', 'false'); b.title = s.title;
+    const im = document.createElement('img'); im.src = `samples/${s.name}_thumb.jpg`; im.alt = s.title;
+    b.append(im);
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.thumb').forEach((t) => t.setAttribute('aria-pressed', String(t === b)));
+      process(`samples/${s.name}.jpg`, s.name);
+    });
+    $('samples').append(b);
+  }
+}
+
+$('file').addEventListener('change', (e) => {
+  const f = e.target.files?.[0];
+  if (!f) return;
+  document.querySelectorAll('.thumb').forEach((t) => t.setAttribute('aria-pressed', 'false'));
+  process(f, null);
+  e.target.value = '';
+});
+
+$('copyBtn').addEventListener('click', async () => {
+  if (!current) return;
+  const text = JSON.stringify(current.fields, null, 2);
+  try { await navigator.clipboard.writeText(text); $('copyBtn').textContent = 'Скопировано'; }
+  catch { const ta = document.createElement('textarea'); ta.value = text; document.body.append(ta); ta.select(); $('copyBtn').textContent = 'Выделено — скопируйте вручную'; setTimeout(() => ta.remove(), 4000); }
+  setTimeout(() => { $('copyBtn').textContent = 'Скопировать результат (JSON)'; }, 2500);
+});
+
+buildSamples();
+document.querySelector('.thumb[title^="Ацетон"]')?.click();
+loadModels().then(() => {
+  if (current?.stored && current.name) process(`samples/${current.name}.jpg`, current.name);
+}).catch((e) => setStatus('Модели не загрузились: ' + e.message, 'error'));
+</script>

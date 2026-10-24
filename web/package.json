@@ -1,0 +1,26 @@
+{
+  "name": "lab-vision",
+  "version": "0.1.0",
+  "description": "On-device recognition for lab: reagent label reading (OCR + field extraction), glassware (planned).",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./fields": "./src/fields.js",
+    "./match": "./src/match.js"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "eval": "node test/eval.js"
+  },
+  "license": "SEE LICENSE IN ../LICENSE",
+  "peerDependencies": {
+    "onnxruntime-web": ">=1.17"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.2",
+    "jpeg-js": "^0.4.4",
+    "onnxruntime-node": "^1.22.0",
+    "onnxruntime-web": "^1.22.0"
+  }
+}

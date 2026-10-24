@@ -1,0 +1,33 @@
+{
+  "_comment": "Ground truth for label fixtures. 'article' is the full article number with pack ('лот' in Chelate terms); 'batch' is the manufacturer batch number ('батч'). batch_suffix is the 3-digit tail Merck prints after the batch (not present in the Data Matrix AI 10). null = not printed on the visible part of the label.",
+  "merck_ammonia": {
+    "brand": "merck", "article": "1.05426.1000", "batch": "K48907426", "batch_suffix": "711",
+    "cas": null, "name": "Ammonia solution", "expiry": null, "pcode": null,
+    "note": "dark bottle, glare, label tilted and cut off on the right"
+  },
+  "vwr_hexane": {
+    "brand": "vwr", "article": "24608.321", "batch": "11C230505", "batch_suffix": null,
+    "cas": "110-54-3", "name": "n-Hexane", "expiry": "2016-03", "pcode": null,
+    "pack": {"value": 2.5, "unit": "L"}
+  },
+  "merck_acetone": {
+    "brand": "merck", "article": "1.00014.2500", "batch": "K47917114", "batch_suffix": "622",
+    "cas": "67-64-1", "name": "Acetone", "expiry": null, "pcode": null,
+    "pack": {"value": 2.5, "unit": "L"}
+  },
+  "macklin_chlorophenol": {
+    "brand": "macklin", "article": "C805172-500g", "batch": "C804135", "batch_suffix": null,
+    "cas": "95-57-8", "name": "o-Chlorophenol", "expiry": null, "pcode": null,
+    "pack": {"value": 500, "unit": "g"}
+  },
+  "merck_anthracene": {
+    "brand": "merck", "article": "8.20109.0250", "batch": "S7651809", "batch_suffix": "924",
+    "cas": "120-12-7", "name": "Anthracene", "expiry": null, "pcode": null,
+    "pack": {"value": 250, "unit": "g"}
+  },
+  "sigma_ferricyanide": {
+    "brand": "sigma", "article": "244023-100G", "batch": "WXBC8031V", "batch_suffix": null,
+    "cas": null, "name": "Potassium hexacyanoferrate(III)", "expiry": null, "pcode": "102033416",
+    "pack": {"value": 100, "unit": "g"}
+  }
+}

@@ -1,0 +1,4 @@
+# reference OCR (same ONNX models as the browser pipeline)
+rapidocr-onnxruntime==1.2.3
+onnxruntime>=1.17
+opencv-python-headless>=4.8
